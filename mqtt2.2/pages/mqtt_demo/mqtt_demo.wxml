@@ -1,0 +1,82 @@
+<view class="container">
+  <!-- 连接状态 -->
+  <view class="status-section">
+    <view class="status-circle" style="background-color: {{statusColor}};"></view>
+    <text class="status-text" style="color: {{statusColor}};">{{status}}</text>
+  </view>
+
+  <!-- 控制按钮行 -->
+  <view class="button-section">
+    <button class="btn btn-secondary" bindtap="reconnectMQTT">重新连接</button>
+  </view>
+
+  <!-- ===== 控制面板（连接后才显示） ===== -->
+  <view wx:if="{{isConnected}}">
+    <!-- 模式选择 -->
+    <view class="control-section">
+      <text class="section-title">模式控制</text>
+      <view class="radio-row">
+        <view class="radio-item {{currentMode == 'USR' ? 'radio-active' : ''}}" bindtap="setMode" data-mode="USR">
+          <text class="radio-dot {{currentMode == 'USR' ? 'dot-active' : ''}}"></text>
+          <text>用户控制模式</text>
+        </view>
+        <view class="radio-item {{currentMode == 'SMART' ? 'radio-active' : ''}}" bindtap="setMode" data-mode="SMART">
+          <text class="radio-dot {{currentMode == 'SMART' ? 'dot-active' : ''}}"></text>
+          <text>智能控制模式</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 蜂鸣器控制 -->
+    <view class="control-section">
+      <text class="section-title">蜂鸣器控制</text>
+      <view class="slider-row">
+        <text class="slider-label">频率:</text>
+        <slider min="0" max="10000" value="{{buzzerFreq}}" step="100" bindchange="onBuzzerSliderChange" show-value />
+      </view>
+      <view class="buzzer-btn-row">
+        <button class="btn btn-small btn-danger" bindtap="sendBuzzerCmd" data-freq="1">关闭蜂鸣器</button>
+        <button class="btn btn-small btn-warn" bindtap="sendBuzzerCmd" data-freq="2000">低频报警</button>
+        <button class="btn btn-small btn-warn" bindtap="sendBuzzerCmd" data-freq="5000">中频报警</button>
+        <button class="btn btn-small btn-warn" bindtap="sendBuzzerCmd" data-freq="9000">高频报警</button>
+      </view>
+    </view>
+
+    <!-- 触发类型 -->
+    <view class="control-section">
+      <text class="section-title">触发类型（单片机当前为: {{sensorType}}）</text>
+      <view class="radio-row">
+        <view class="radio-item {{sensorType == 'AD' ? 'radio-active' : ''}}" bindtap="setSensorType" data-sensor="AD">
+          <text class="radio-dot {{sensorType == 'AD' ? 'dot-active' : ''}}"></text>
+          <text>AD触发</text>
+        </view>
+        <view class="radio-item {{sensorType == 'IO' ? 'radio-active' : ''}}" bindtap="setSensorType" data-sensor="IO">
+          <text class="radio-dot {{sensorType == 'IO' ? 'dot-active' : ''}}"></text>
+          <text>IO触发</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 传感器数据展示 -->
+    <view class="control-section" wx:if="{{lastFlameData !== null}}">
+      <text class="section-title">火焰传感器最新数据</text>
+      <text class="sensor-value">{{lastFlameData}}</text>
+    </view>
+  </view>
+
+  <!-- 消息日志 -->
+  <view class="log-section" wx:if="{{logs.length > 0}}">
+    <view class="log-header">
+      <text class="log-title">消息日志 ({{logs.length}})</text>
+      <text class="log-clear" bindtap="clearLogs">清空</text>
+    </view>
+    <scroll-view class="log-list" scroll-y="{{true}}" scroll-into-view="log_bottom">
+      <view class="log-item" wx:for="{{logs}}" wx:key="index" id="log_{{index}}">
+        <text class="log-time">{{item.time}}</text>
+        <text class="log-topic">[{{item.topic}}]</text>
+        <text class="log-msg">{{item.message}}</text>
+      </view>
+      <view id="log_bottom"></view>
+    </scroll-view>
+  </view>
+</view>
